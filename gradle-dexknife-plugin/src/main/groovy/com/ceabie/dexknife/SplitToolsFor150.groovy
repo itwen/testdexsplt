@@ -111,10 +111,12 @@ public class SplitToolsFor150 extends DexSplitTools {
                             dexKnifeConfig.additionalParameters)
 
                     // 替换这个文件
-                    fileAdtMainList.delete()
-                    project.copy {
-                        from 'maindexlist.txt'
-                        into fileAdtMainList.parentFile
+                    if (fileAdtMainList != null) {
+                        fileAdtMainList.delete()
+                        project.copy {
+                            from 'maindexlist.txt'
+                            into fileAdtMainList.parentFile
+                        }
                     }
                 }
 

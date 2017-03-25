@@ -496,7 +496,7 @@ public class DexSplitTools {
             boolean logFilter) throws Exception {
 
         if (outputDir == null || !outputDir.exists()) {
-            System.err.println("DexKnife Warning: Android recommand Main dex is no exist, try run again!");
+            System.err.println("DexKnife Warning: Android recommend Main dex is no exist, try run again!");
             return null;
         }
 
