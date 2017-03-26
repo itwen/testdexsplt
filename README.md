@@ -12,6 +12,7 @@ Solve android studio enable the native multidex feature, but there will be too m
 It will auto enable when disabled instant-run or in packaging release.(minsdk <= 21)**
 
 ###Update Log
+
     1.6.0: Modify: When only -keep is configured, only keep the specified classes.
     1.5.9: Compatible with some ancient version of gradle and android gradle plugin.
     1.5.8: Compatible with gradle 3.2, fixed use of only support-split and support-keep resulting in an extra large number of classes.
@@ -26,6 +27,7 @@ It will auto enable when disabled instant-run or in packaging release.(minsdk <=
     1.5.1: fixed the proguard mode
 
 ###Features
+
 1. DexKnife just converts the wildcards of class path to maindexlist.txt, **does not participate in** other compilation process. It is not automatic tools, you need to have a understanding of the maindexlist features.
 2. If the class can not be found (ie class no def / found) at runtime, enable DexKnife's log function, debug the config of dexKnife and check the config ProGuard. Verify the generated maindexlist.txt match your config. **Do not split the classes in the Application class into second dex**. (Even if you manually configure the maindexlist will be such a problem.)
 3. DexKnife can only explicitly specify the classes of main dex, can not specify the classes of after the second dex (limitation of dex's param maindexlist). If you need to completely configure the main dex manually, use:
@@ -41,6 +43,7 @@ It will auto enable when disabled instant-run or in packaging release.(minsdk <=
 8. minsdk <= 21. If minsdk >= 22, the android gradle plugin will use the new compilation, the current version of DexKnife can not be compatible.
 
 ###Usage
+
 1.In your project's build.gradle, buildscript.
 
         buildscript {
@@ -132,6 +135,7 @@ and then, set your app
 - **注意：由于高于 2.0.0 的 instant-run 特性与 multidex不兼容，DexKnife会暂时禁用。当instant-run被禁用或者release打包时会自动启用。(minsdk <= 21)**
 
 ###更新日志
+
     1.6.0: 修改：当只有keep时，只保留keep指定的类
     1.5.9: 兼容一些古老的 gradle 和 android gradle plugin版本
     1.5.8: 兼容gradle 3.2，修复当只使用support-split/support-keep时出现大量的额外类
@@ -146,6 +150,7 @@ and then, set your app
     1.5.1: 修复 proguard mode
 
 ###特性（重要）
+
 1. DexKnife只负责由配置的 类路径通配符 -> maindexlist 文件的转换，生成maindexlist.txt，**不参与**其他的处理和编译过程。非全自动工具，需要对maindexlist特性有较深的了解。
 2. 如果出现运行时类找不到（i.e. class no def/found），请打开DexKnife的log功能，比对调试下DexKnife或ProGuard配置，并检查生成的maindexlist是否匹配你的配置。**不要将在Application中使用到的类，分到第二个dex中**。（即使不使用DexKnife，手动配置maindexlist也会出现这样的问题）
 3. DexKnife只能明确指定第一个dex中的类，不能明确指定第二个dex以后的类（dex的maindexlist限制）。如果需要完全手动配置第一个dex，使用<br />
@@ -161,6 +166,7 @@ and then, set your app
 8. minsdk <= 21。如果 minsdk >= 22，官方将换用新的编译方式，导致现有版本的DexKnife无法兼容。
 
 ###使用方法
+
 1.在你的工程的 build.gradle 中 buildscript:
 
         buildscript {
@@ -248,6 +254,7 @@ and then, set your app
 4.编译你的应用
 
 ### 调试
+
 在Terminal中运行 gradleDebug。具体参见：http://blog.csdn.net/ceabie/article/details/55271161
 
 
