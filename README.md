@@ -4,12 +4,12 @@
 
 # DexKnife
 
->A simple android gradle plugin to use the patterns of package to smart split the specified classes to multi dex.(minsdk <= 21)<br />
+>A simple android gradle plugin to use the patterns of package to smart split the specified classes to multi dex. <br />
 Also supports android gradle plugin 2.2.0 multidex.<br />
 Solve android studio enable the native multidex feature, but there will be too many classes in main dex. (See Features 7)
 
 - **Notes: Because instant-run of 2.0.0 above is incompatible with multidex, DexKnife is auto disabled when instant-run mode.
-It will auto enable when disabled instant-run or in packaging release.**
+It will auto enable when disabled instant-run or in packaging release.(minsdk <= 21)**
 
 ###Update Log
     1.6.0: Modify: When only -keep is configured, only keep the specified classes.
@@ -125,11 +125,11 @@ and then, set your app
 
 # DexKnife（中文）
 
->一个简单的将指定使用通配符包名分包到第二个dex中gradle插件。(minsdk <= 21，使用疑问查看 特性)<br />
+>一个简单的将指定使用通配符包名分包到第二个dex中gradle插件。(使用疑问查看 特性)<br />
 同时支持 android gradle plugin 2.2.0 multidex. <br />
 可以解决 android studio 使用 multidex，但还会出现dex类太多的问题。(参见 特性 7)
 
-- **注意：由于高于 2.0.0 的 instant-run 特性与 multidex不兼容，DexKnife会暂时禁用。当instant-run被禁用或者release打包时会自动启用。**
+- **注意：由于高于 2.0.0 的 instant-run 特性与 multidex不兼容，DexKnife会暂时禁用。当instant-run被禁用或者release打包时会自动启用。(minsdk <= 21)**
 
 ###更新日志
     1.6.0: 修改：当只有keep时，只保留keep指定的类
