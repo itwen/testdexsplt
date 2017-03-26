@@ -51,7 +51,7 @@ public class DexSplitTools {
     private static final String DEX_KNIFE_CFG_LOG_FILTER_SUGGEST = "-log-filter-suggest";
     private static final String DEX_KNIFE_CFG_LOG_FILTER = "-log-filter";
 
-    private static final String MAINDEXLIST_TXT = "maindexlist.txt";
+    protected static final String MAINDEXLIST_TXT = "maindexlist.txt";
     private static final String MAPPING_FLAG = " -> ";
     private static final int MAPPING_FLAG_LEN = MAPPING_FLAG.length();
     private static final String CLASS_SUFFIX = ".class";
@@ -287,12 +287,12 @@ public class DexSplitTools {
      */
     private static boolean genMainDexList(Project project, boolean minifyEnabled,
                                           File mappingFile, File jarMergingOutputFile,
-                                          File andMainDexList, DexKnifeConfig dexKnifeConfig) throws Exception {
+                                          File adtMainDexList, DexKnifeConfig dexKnifeConfig) throws Exception {
 
         System.out.println(":" + project.getName() + ":genMainDexList");
 
-        // 1.get the adt's maindexlist
-        Map<String, Boolean> adtMainClasses = null;
+        // 1.get the recommend adt's maindexlist
+        Map<String, Boolean> recommendMainClasses = null;
         if (dexKnifeConfig.useSuggest) {
 
             PatternSet patternSet = dexKnifeConfig.suggestPatternSet;
@@ -301,7 +301,7 @@ public class DexSplitTools {
             }
 
             System.out.println("DexKnife: use suggest");
-            adtMainClasses = getAdtMainDexClasses(andMainDexList, patternSet, dexKnifeConfig.logFilterSuggest);
+            recommendMainClasses = getRecommendMainDexClasses(adtMainDexList, patternSet, dexKnifeConfig.logFilterSuggest);
         }
 
         File keepFile = project.file(MAINDEXLIST_TXT);
@@ -311,9 +311,9 @@ public class DexSplitTools {
         List<String> mainClasses = null;
         if (dexKnifeConfig.patternSet == null || isPatternSetEmpty(dexKnifeConfig.patternSet)) {
             // only filter the suggest list
-            if (adtMainClasses != null && adtMainClasses.size() > 0) {
+            if (recommendMainClasses != null && recommendMainClasses.size() > 0) {
                 mainClasses = new ArrayList<>();
-                Set<Map.Entry<String, Boolean>> entries = adtMainClasses.entrySet();
+                Set<Map.Entry<String, Boolean>> entries = recommendMainClasses.entrySet();
                 for (Map.Entry<String, Boolean> entry : entries) {
                     if (entry.getValue()) {
                         mainClasses.add(entry.getKey());
@@ -325,13 +325,13 @@ public class DexSplitTools {
                 System.err.println("DexKnife: From Mapping");
                 // get classes from mapping
                 mainClasses = getMainClassesFromMapping(mappingFile, dexKnifeConfig.patternSet,
-                        adtMainClasses, dexKnifeConfig.logFilter);
+                        recommendMainClasses, dexKnifeConfig.logFilter);
             } else {
                 System.out.println("DexKnife: From MergedJar: " + jarMergingOutputFile);
                 if (jarMergingOutputFile != null) {
                     // get classes from merged jar
                     mainClasses = getMainClassesFromJar(jarMergingOutputFile, dexKnifeConfig.patternSet,
-                            adtMainClasses, dexKnifeConfig.logFilter);
+                            recommendMainClasses, dexKnifeConfig.logFilter);
                 } else {
                     System.err.println("DexKnife: The Merged Jar is not exist! Can't be processed!");
                 }
@@ -403,7 +403,7 @@ public class DexSplitTools {
      *
      * @param mapping        the mapping file
      * @param mainDexPattern the main dex pattern
-     * @param adtMainCls     the filter mapping of suggest classes
+     * @param recommendMainCls     the filter mapping of suggest classes
      * @param logFilter
      * @return the main classes from mapping
      * @throws Exception the exception
@@ -412,7 +412,7 @@ public class DexSplitTools {
     private static List<String> getMainClassesFromMapping(
             File mapping,
             PatternSet mainDexPattern,
-            Map<String, Boolean> adtMainCls, boolean logFilter) throws Exception {
+            Map<String, Boolean> recommendMainCls, boolean logFilter) throws Exception {
 
         String line;
         List<String> mainDexList = new ArrayList<>();
@@ -433,7 +433,7 @@ public class DexSplitTools {
 
                     filterElement.setClassPath(sOrgCls);
 
-                    if (isAtMainDex(adtMainCls, sMapCls, filterElement, asSpec, logFilter)) {
+                    if (isAtMainDex(recommendMainCls, sMapCls, filterElement, asSpec, logFilter)) {
                         mainDexList.add(sMapCls);
                     }
                 }
@@ -490,18 +490,18 @@ public class DexSplitTools {
      * get the maindexlist of android gradle plugin.
      * if enable ProGuard, return the mapped class.
      */
-    private static Map<String, Boolean> getAdtMainDexClasses(
-            File outputDir,
+    private static Map<String, Boolean> getRecommendMainDexClasses(
+            File adtMainDexList,
             PatternSet mainDexPattern,
             boolean logFilter) throws Exception {
 
-        if (outputDir == null || !outputDir.exists()) {
-            System.err.println("DexKnife Warning: Android recommend Main dex is no exist, try run again!");
+        if (adtMainDexList == null || !adtMainDexList.exists()) {
+            System.err.println("DexKnife Warning: Android recommend Main dex is no exist.");
             return null;
         }
 
         HashMap<String, Boolean> mainCls = new HashMap<>();
-        BufferedReader reader = new BufferedReader(new FileReader(outputDir));
+        BufferedReader reader = new BufferedReader(new FileReader(adtMainDexList));
 
         ClassFileTreeElement treeElement = new ClassFileTreeElement();
         Spec<FileTreeElement> asSpec = mainDexPattern != null ? getMaindexSpec(mainDexPattern) : null;

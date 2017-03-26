@@ -78,6 +78,7 @@
 -dontwarn android.support.**
 
 
+-keep class com.ceabie.demo.methodpool1.** {*;}
 
 -keep class ** implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;

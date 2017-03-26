@@ -43,6 +43,11 @@ public class SplitToolsFor150 extends DexSplitTools {
             return
         }
 
+        if (isInTestingMode(variant)) {
+            System.err.println("DexKnife: Testing mode, DexKnife is auto disabled!")
+            return
+        }
+
         TransformTask dexTask
 //        TransformTask proGuardTask
         TransformTask jarMergingTask
@@ -104,20 +109,24 @@ public class SplitToolsFor150 extends DexSplitTools {
                     int version = getAndroidPluginVersion(getAndroidGradlePluginVersion())
                     println("DexKnife: AndroidPluginVersion: " + version)
 
+                    // replace android gradle plugin's maindexlist.txt
+                    if (fileAdtMainList != null) {
+                        fileAdtMainList.delete()
+                        project.copy {
+                            from MAINDEXLIST_TXT
+                            into fileAdtMainList.parentFile
+                        }
+                    } else {
+                        fileAdtMainList = project.file(MAINDEXLIST_TXT)
+                    }
+
                     // after 2.2.0, it can additionalParameters, but it is a copy in task
 
                     // 替换 AndroidBuilder
                     InjectAndroidBuilder.proxyAndroidBuilder(dexTransform,
-                            dexKnifeConfig.additionalParameters)
+                            dexKnifeConfig.additionalParameters,
+                            fileAdtMainList)
 
-                    // 替换这个文件
-                    if (fileAdtMainList != null) {
-                        fileAdtMainList.delete()
-                        project.copy {
-                            from 'maindexlist.txt'
-                            into fileAdtMainList.parentFile
-                        }
-                    }
                 }
 
                 endDexKnife()
@@ -125,14 +134,17 @@ public class SplitToolsFor150 extends DexSplitTools {
         }
     }
 
-    private static boolean isInInstantRunMode(Object variant) {
+    private static boolean isInInstantRunMode(ApplicationVariant variant) {
         try {
             def scope = variant.getVariantData().getScope()
             def instantRunBuildContext = scope.getInstantRunBuildContext()
             return instantRunBuildContext.isInInstantRunMode()
         } catch (Throwable e) {
         }
-
         return false
+    }
+
+    private static boolean isInTestingMode(ApplicationVariant variant) {
+        return (variant.getVariantData().getType().isForTesting());
     }
 }

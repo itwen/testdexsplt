@@ -15,6 +15,8 @@
  */
 package com.ceabie.dexknife
 
+import com.android.annotations.NonNull
+import com.android.annotations.Nullable
 import com.android.build.gradle.internal.transforms.DexTransform
 import com.android.builder.core.AndroidBuilder
 import com.android.builder.core.DexOptions
@@ -38,6 +40,7 @@ public class InjectAndroidBuilder extends AndroidBuilder {
 
     Collection<String> mAddParams;
     AndroidBuilder mAndroidBuilder;
+    File mMainDexListFileDK;
 
     public InjectAndroidBuilder(String projectId,
                                 String createdBy,
@@ -61,7 +64,7 @@ public class InjectAndroidBuilder extends AndroidBuilder {
                                 ProcessOutputHandler processOutputHandler)
             throws IOException, InterruptedException, ProcessException {
 
-        println("DexKnife: convertByteCode before 2.2.0")
+        println("DexKnife: convertByteCode < 2.2.0")
         if (mAddParams != null) {
             if (additionalParameters == null) {
                 additionalParameters = new ArrayList<>()
@@ -70,24 +73,27 @@ public class InjectAndroidBuilder extends AndroidBuilder {
             mergeParams(additionalParameters, mAddParams)
         }
 
+        if (mainDexList == null) {
+            mainDexList = mMainDexListFileDK
+        }
+
         // groovy call super has bug
         mAndroidBuilder.convertByteCode(inputs, outDexFolder, multidex, mainDexList, dexOptions,
                 additionalParameters, incremental, optimize, processOutputHandler);
     }
 
-//    @Override for >= 2.2.0
-    public void convertByteCode(Collection<File> inputs,
-                                File outDexFolder,
-                                boolean multidex,
-                                File mainDexList,
-                                final DexOptions dexOptions,
-                                boolean optimize,
-                                ProcessOutputHandler processOutputHandler)
+    //    @Override for >= 2.3.0
+    public void convertByteCode(
+            Collection<File> inputs,
+            File outDexFolder,
+            boolean multidex,
+            File mainDexList,
+            final DexOptions dexOptions,
+            boolean optimize,
+            ProcessOutputHandler processOutputHandler)
             throws IOException, InterruptedException, ProcessException {
 
-        println("DexKnife:convertByteCode after 2.2.0")
-
-        DexOptions dexOptionsProxy = dexOptions
+        println("DexKnife: 2.2.0 <= convertByteCode < 2.3.0")
 
         if (mAddParams != null) {
             List<String> additionalParameters = dexOptions.getAdditionalParameters()
@@ -98,19 +104,51 @@ public class InjectAndroidBuilder extends AndroidBuilder {
             mergeParams(additionalParameters, mAddParams)
         }
 
-        mAndroidBuilder.convertByteCode(inputs, outDexFolder, multidex, mainDexList, dexOptionsProxy,
+        if (mainDexList == null) {
+            mainDexList = mMainDexListFileDK
+        }
+
+        mAndroidBuilder.convertByteCode(inputs, outDexFolder, multidex, mainDexList, dexOptions,
                 optimize, processOutputHandler);
+    }
+
+    //    @Override for >= 2.3.0
+    public void convertByteCode(
+            @NonNull Collection<File> inputs,
+            @NonNull File outDexFolder,
+            boolean multidex,
+            @Nullable File mainDexList,
+            @NonNull DexOptions dexOptions,
+            @NonNull ProcessOutputHandler processOutputHandler)
+            throws IOException, InterruptedException, ProcessException {
+
+        println("DexKnife:convertByteCode >= 2.3.0")
+
+        if (mAddParams != null) {
+            List<String> additionalParameters = dexOptions.getAdditionalParameters()
+            if (additionalParameters == null) {
+                additionalParameters = new ArrayList<>()
+            }
+
+            mergeParams(additionalParameters, mAddParams)
+        }
+
+        if (mainDexList == null) {
+            mainDexList = mMainDexListFileDK
+        }
+        mAndroidBuilder.convertByteCode(inputs, outDexFolder, multidex, mainDexList, dexOptions,
+                processOutputHandler);
     }
 
     @CompileStatic
     @Override
-    List<File> getBootClasspath(boolean includeOptionalLibraries) {
+    public List<File> getBootClasspath(boolean includeOptionalLibraries) {
         return mAndroidBuilder.getBootClasspath(includeOptionalLibraries)
     }
 
     @CompileStatic
     @Override
-    List<String> getBootClasspathAsStrings(boolean includeOptionalLibraries) {
+    public List<String> getBootClasspathAsStrings(boolean includeOptionalLibraries) {
         return mAndroidBuilder.getBootClasspathAsStrings(includeOptionalLibraries)
     }
 
@@ -130,15 +168,16 @@ public class InjectAndroidBuilder extends AndroidBuilder {
     }
 
 
-    public static void proxyAndroidBuilder(DexTransform transform, Collection<String> addParams) {
+    public static void proxyAndroidBuilder(DexTransform transform, Collection<String> addParams, File mainDexList) {
         if (addParams != null && addParams.size() > 0) {
             accessibleField(DexTransform.class, "androidBuilder")
-                    .set(transform, getProxyAndroidBuilder(transform.androidBuilder, addParams))
+                    .set(transform, getProxyAndroidBuilder(transform.androidBuilder, addParams, mainDexList))
         }
     }
 
     private static AndroidBuilder getProxyAndroidBuilder(AndroidBuilder orgAndroidBuilder,
-                                                         Collection<String> addParams) {
+                                                         Collection<String> addParams,
+                                                         File mainDexList) {
         InjectAndroidBuilder myAndroidBuilder = new InjectAndroidBuilder(
                 orgAndroidBuilder.mProjectId,
                 orgAndroidBuilder.mCreatedBy,
@@ -166,6 +205,7 @@ public class InjectAndroidBuilder extends AndroidBuilder {
 //        myAndroidBuilder.mBootClasspathFiltered = orgAndroidBuilder.mBootClasspathFiltered
 //        myAndroidBuilder.mBootClasspathAll = orgAndroidBuilder.mBootClasspathAll
 
+        myAndroidBuilder.mMainDexListFileDK = mainDexList
         return myAndroidBuilder
     }
 
