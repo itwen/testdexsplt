@@ -46,13 +46,13 @@ public class SplitToolsFor130 extends DexSplitTools {
             dex.doFirst {
                 startDexKnife()
 
-                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project)
-
                 def scope = variant.getVariantData().getScope()
                 File mergedJar = scope.jarMergingOutputFile
                 File mappingFile = variant.mappingFile
                 File andMainDexList = scope.mainDexListFile
                 boolean minifyEnabled = variant.buildType.minifyEnabled
+
+                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project, andMainDexList)
 
                 if (processMainDexList(project, minifyEnabled, mappingFile, mergedJar,
                         andMainDexList, dexKnifeConfig)) {

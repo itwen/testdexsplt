@@ -104,7 +104,8 @@ public class DexSplitTools {
     /**
      * get the config of dex knife
      */
-    protected static DexKnifeConfig getDexKnifeConfig(Project project) throws Exception {
+    protected static DexKnifeConfig getDexKnifeConfig(Project project, File adtMaindexList)
+            throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(project.file(DEX_KNIFE_CFG_TXT)));
         DexKnifeConfig dexKnifeConfig = new DexKnifeConfig();
 
@@ -195,16 +196,21 @@ public class DexSplitTools {
         // 使用ADT建议的mainlist
         if (dexKnifeConfig.useSuggest) {
 
-            // 将全局过滤应用到建议的mainlist
-            if (dexKnifeConfig.filterSuggest) {
-                splitSuggest.addAll(splitToSecond);
-                keepSuggest.addAll(keepMain);
-            }
+            if (adtMaindexList != null) {
+                // 将全局过滤应用到建议的mainlist
+                if (dexKnifeConfig.filterSuggest) {
+                    splitSuggest.addAll(splitToSecond);
+                    keepSuggest.addAll(keepMain);
+                }
 
-            if (!splitSuggest.isEmpty() || !keepSuggest.isEmpty()) {
-                dexKnifeConfig.suggestPatternSet = new PatternSet()
-                        .exclude(splitSuggest)
-                        .include(keepSuggest);
+                if (!splitSuggest.isEmpty() || !keepSuggest.isEmpty()) {
+                    dexKnifeConfig.suggestPatternSet = new PatternSet()
+                            .exclude(splitSuggest)
+                            .include(keepSuggest);
+                }
+            } else {
+                splitToSecond.addAll(splitSuggest);
+                keepMain.addAll(keepSuggest);
             }
         }
 
@@ -293,7 +299,7 @@ public class DexSplitTools {
 
         // 1.get the recommend adt's maindexlist
         Map<String, Boolean> recommendMainClasses = null;
-        if (dexKnifeConfig.useSuggest) {
+        if (dexKnifeConfig.useSuggest && adtMainDexList != null && adtMainDexList.exists()) {
 
             PatternSet patternSet = dexKnifeConfig.suggestPatternSet;
             if (dexKnifeConfig.filterSuggest && patternSet == null) {

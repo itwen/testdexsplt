@@ -17,9 +17,13 @@ package com.ceabie.dexknife
 
 import com.android.build.api.transform.Format
 import com.android.build.api.transform.Transform
+import com.android.build.gradle.AndroidGradleOptions
 import com.android.build.gradle.api.ApplicationVariant
+import com.android.build.gradle.internal.core.GradleVariantConfiguration
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.transforms.DexTransform
+import com.android.builder.model.OptionalCompilationStep
+import com.android.sdklib.AndroidVersion
 import org.gradle.api.Project
 
 /**
@@ -81,11 +85,21 @@ public class SplitToolsFor150 extends DexSplitTools {
                 File mergedJar = null
                 File mappingFile = variant.mappingFile
                 DexTransform dexTransform = it.transform
-                File fileAdtMainList = dexTransform.mainDexListFile
+                File adtMainDexList = dexTransform.mainDexListFile
 
-                println("DexKnife Adt Main: " + fileAdtMainList)
+                println("DexKnife Adt Main: " + adtMainDexList)
 
-                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project)
+                if (adtMainDexList == null) {
+                    System.err.println("DexKnife: Not LegacyMultiDexMode, suggest-keep and suggest-split will merge into global filter.")
+                    if (!minifyEnabled) {
+                        System.err.println("DexKnife: Not LegacyMultiDexMode and Not minifyEnabled, DexKnife is auto disabled!")
+                        logProjectSetting(project, variant)
+                        return
+                    }
+                }
+
+
+                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project, adtMainDexList)
 
                 // 非混淆的，从合并后的jar文件中提起mainlist；
                 // 混淆的，直接从mapping文件中提取
@@ -104,20 +118,20 @@ public class SplitToolsFor150 extends DexSplitTools {
                 }
 
                 if (processMainDexList(project, minifyEnabled, mappingFile, mergedJar,
-                        fileAdtMainList, dexKnifeConfig)) {
+                        adtMainDexList, dexKnifeConfig)) {
 
                     int version = getAndroidPluginVersion(getAndroidGradlePluginVersion())
                     println("DexKnife: AndroidPluginVersion: " + version)
 
                     // replace android gradle plugin's maindexlist.txt
-                    if (fileAdtMainList != null) {
-                        fileAdtMainList.delete()
+                    if (adtMainDexList != null) {
+                        adtMainDexList.delete()
                         project.copy {
                             from MAINDEXLIST_TXT
-                            into fileAdtMainList.parentFile
+                            into adtMainDexList.parentFile
                         }
                     } else {
-                        fileAdtMainList = project.file(MAINDEXLIST_TXT)
+                        adtMainDexList = project.file(MAINDEXLIST_TXT)
                     }
 
                     // after 2.2.0, it can additionalParameters, but it is a copy in task
@@ -125,7 +139,7 @@ public class SplitToolsFor150 extends DexSplitTools {
                     // 替换 AndroidBuilder
                     InjectAndroidBuilder.proxyAndroidBuilder(dexTransform,
                             dexKnifeConfig.additionalParameters,
-                            fileAdtMainList)
+                            adtMainDexList)
 
                 }
 
@@ -146,5 +160,37 @@ public class SplitToolsFor150 extends DexSplitTools {
 
     private static boolean isInTestingMode(ApplicationVariant variant) {
         return (variant.getVariantData().getType().isForTesting());
+    }
+
+    private static void logProjectSetting(Project project, ApplicationVariant variant) {
+        System.err.println("Please upload below Log to  https://github.com/ceabie/DexKnifePlugin/issues")
+        System.err.println("Upload Log Start >>>>>>>>>>>>>>>>>>>>>>>")
+        println("variant: " + variant.name.capitalize())
+        println("FeatureLevel: " + AndroidGradleOptions.getTargetFeatureLevel(project))
+
+        def variantScope = variant.getVariantData().getScope()
+        def configuration = variantScope.getVariantData().getVariantConfiguration()
+        GradleVariantConfiguration config = variantScope.getVariantConfiguration();
+        def optionalCompilationSteps = AndroidGradleOptions.getOptionalCompilationSteps(project);
+        def context = variantScope.getInstantRunBuildContext()
+
+        println("isLegacyMultiDexMode: " + configuration.isLegacyMultiDexMode())
+        println("isInstantRunSupported: " + config.isInstantRunSupported())
+        println("targetDeviceSupportsInstantRun: " + targetDeviceSupportsInstantRun(config, project))
+        println("INSTANT_DEV: " + optionalCompilationSteps.contains(OptionalCompilationStep.INSTANT_DEV))
+        println("getPatchingPolicy: " + context.getPatchingPolicy())
+        System.err.println("Upload Log End <<<<<<<<<<<<<<<<<<<<<<<")
+    }
+
+    private static boolean targetDeviceSupportsInstantRun(
+            GradleVariantConfiguration config,
+            Project project) {
+        if (config.isLegacyMultiDexMode()) {
+            // We don't support legacy multi-dex on Dalvik.
+            return AndroidGradleOptions.getTargetFeatureLevel(project) >=
+                    AndroidVersion.ART_RUNTIME.getFeatureLevel();
+        }
+
+        return true;
     }
 }
