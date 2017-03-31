@@ -14,6 +14,7 @@ It will auto enable when disabled instant-run or in packaging release.(minsdk <=
 
 ###Update Log
 
+    1.6.1.beta: Beta Vetsion, Compatible with android gradle plugin 2.3.0.
     1.6.0: Modify: When only -keep is configured, only keep the specified classes.
     1.5.9: Compatible with some ancient version of gradle and android gradle plugin.
     1.5.8: Compatible with gradle 3.2, fixed use of only support-split and support-keep resulting in an extra large number of classes.
@@ -54,7 +55,7 @@ It will auto enable when disabled instant-run or in packaging release.(minsdk <=
             dependencies {
                 ....
                 classpath 'com.android.tools.build:gradle:2.2.0'  // or other
-                classpath 'com.ceabie.dextools:gradle-dexknife-plugin:1.6.0'
+                classpath 'com.ceabie.dextools:gradle-dexknife-plugin:1.6.0' // android tool >= 2.3.0 use 1.6.1.beta to test
             }
         }
 
@@ -141,6 +142,7 @@ and then, set your app
 
 ###更新日志
 
+    1.6.1.beta: 测试版本，兼容 Android gradle plugin 2.3.0，在 No-LegacyMultiDexMode 模式下（Adt Main: null），将suggest合并到全局过滤中。可能会出现错误，请将日志反馈到issues。
     1.6.0: 修改：当只有keep时，只保留keep指定的类
     1.5.9: 兼容一些古老的 gradle 和 android gradle plugin版本
     1.5.8: 兼容gradle 3.2，修复当只使用support-split/support-keep时出现大量的额外类
@@ -181,7 +183,7 @@ and then, set your app
             dependencies {
                 ....
                 classpath 'com.android.tools.build:gradle:2.2.0'  // or other
-                classpath 'com.ceabie.dextools:gradle-dexknife-plugin:1.6.0'
+                classpath 'com.ceabie.dextools:gradle-dexknife-plugin:1.6.0' // 使用2.3.0 的tool，可以使用1.6.1.beta，有错误请反馈issues
             }
         }
 

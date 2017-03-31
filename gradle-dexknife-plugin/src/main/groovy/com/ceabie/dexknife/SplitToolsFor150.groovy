@@ -90,9 +90,10 @@ public class SplitToolsFor150 extends DexSplitTools {
                 println("DexKnife Adt Main: " + adtMainDexList)
 
                 if (adtMainDexList == null) {
-                    System.err.println("DexKnife: Not LegacyMultiDexMode, suggest-keep and suggest-split will merge into global filter.")
-                    if (!minifyEnabled) {
-                        System.err.println("DexKnife: Not LegacyMultiDexMode and Not minifyEnabled, DexKnife is auto disabled!")
+                    if (minifyEnabled) {
+                        System.err.println("DexKnife: MainDexList isn't necessary in No-LegacyMultiDexMode. suggest-keep and suggest-split will merge into global filter.")
+                    } else {
+                        System.err.println("DexKnife: No-LegacyMultiDexMode and Not minifyEnabled, DexKnife is auto disabled!")
                         logProjectSetting(project, variant)
                         return
                     }
@@ -163,8 +164,8 @@ public class SplitToolsFor150 extends DexSplitTools {
     }
 
     private static void logProjectSetting(Project project, ApplicationVariant variant) {
-        System.err.println("Please upload below Log to  https://github.com/ceabie/DexKnifePlugin/issues")
-        System.err.println("Upload Log Start >>>>>>>>>>>>>>>>>>>>>>>")
+        System.err.println("Please feedback below Log to  https://github.com/ceabie/DexKnifePlugin/issues")
+        System.err.println("Feedback Log Start >>>>>>>>>>>>>>>>>>>>>>>")
         println("variant: " + variant.name.capitalize())
         println("FeatureLevel: " + AndroidGradleOptions.getTargetFeatureLevel(project))
 
@@ -179,7 +180,7 @@ public class SplitToolsFor150 extends DexSplitTools {
         println("targetDeviceSupportsInstantRun: " + targetDeviceSupportsInstantRun(config, project))
         println("INSTANT_DEV: " + optionalCompilationSteps.contains(OptionalCompilationStep.INSTANT_DEV))
         println("getPatchingPolicy: " + context.getPatchingPolicy())
-        System.err.println("Upload Log End <<<<<<<<<<<<<<<<<<<<<<<")
+        System.err.println("Feedback Log End <<<<<<<<<<<<<<<<<<<<<<<")
     }
 
     private static boolean targetDeviceSupportsInstantRun(
