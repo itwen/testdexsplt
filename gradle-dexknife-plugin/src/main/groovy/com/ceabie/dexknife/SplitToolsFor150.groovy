@@ -21,6 +21,7 @@ import com.android.build.gradle.AndroidGradleOptions
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.internal.core.GradleVariantConfiguration
 import com.android.build.gradle.internal.pipeline.TransformTask
+import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.transforms.DexTransform
 import com.android.builder.model.OptionalCompilationStep
 import com.android.sdklib.AndroidVersion
@@ -87,11 +88,17 @@ public class SplitToolsFor150 extends DexSplitTools {
                 DexTransform dexTransform = it.transform
                 File adtMainDexList = dexTransform.mainDexListFile
 
-                println("DexKnife Adt Main: " + adtMainDexList)
+                int version = getAndroidPluginVersion(getAndroidGradlePluginVersion())
+                println("DexKnife: AndroidPluginVersion: " + version)
+
+                println("DexKnife: Adt Main: " + adtMainDexList)
+                println("DexKnife: Target Device: \n" +
+                        "          MinSdkVersion: " + getMinSdk(variant) +
+                        "          FeatureLevel: " + AndroidGradleOptions.getTargetFeatureLevel(project))
 
                 if (adtMainDexList == null) {
                     if (minifyEnabled) {
-                        System.err.println("DexKnife: MainDexList isn't necessary in No-LegacyMultiDexMode. suggest-keep and suggest-split will merge into global filter.")
+                        System.err.println("DexKnife: MainDexList in No-LegacyMultiDexMode isn't necessary. suggest-keep and suggest-split will merge into global filter.")
                     } else {
                         System.err.println("DexKnife: No-LegacyMultiDexMode and Not minifyEnabled, DexKnife is auto disabled!")
                         logProjectSetting(project, variant)
@@ -120,9 +127,6 @@ public class SplitToolsFor150 extends DexSplitTools {
 
                 if (processMainDexList(project, minifyEnabled, mappingFile, mergedJar,
                         adtMainDexList, dexKnifeConfig)) {
-
-                    int version = getAndroidPluginVersion(getAndroidGradlePluginVersion())
-                    println("DexKnife: AndroidPluginVersion: " + version)
 
                     // replace android gradle plugin's maindexlist.txt
                     if (adtMainDexList != null) {
@@ -161,6 +165,11 @@ public class SplitToolsFor150 extends DexSplitTools {
 
     private static boolean isInTestingMode(ApplicationVariant variant) {
         return (variant.getVariantData().getType().isForTesting());
+    }
+
+    private static int getMinSdk(ApplicationVariant variant) {
+        VariantScope variantScope = variant.getVariantData().getScope()
+        return variantScope.getMinSdkVersion().getApiLevel();
     }
 
     private static void logProjectSetting(Project project, ApplicationVariant variant) {
