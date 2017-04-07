@@ -43,7 +43,9 @@ public class SplitToolsFor150 extends DexSplitTools {
     }
 
     public static void processSplitDex(Project project, ApplicationVariant variant) {
-        if (isInInstantRunMode(variant)) {
+        VariantScope variantScope = variant.getVariantData().getScope()
+
+        if (isInInstantRunMode(variantScope)) {
             System.err.println("DexKnife: Instant Run mode, DexKnife is auto disabled!")
             return
         }
@@ -88,22 +90,48 @@ public class SplitToolsFor150 extends DexSplitTools {
                 DexTransform dexTransform = it.transform
                 File adtMainDexList = dexTransform.mainDexListFile
 
-                int version = getAndroidPluginVersion(getAndroidGradlePluginVersion())
-                println("DexKnife: AndroidPluginVersion: " + version)
-
                 println("DexKnife: Adt Main: " + adtMainDexList)
-                println("DexKnife: Target Device: \n" +
-                        "          MinSdkVersion: " + getMinSdk(variant) +
-                        "          FeatureLevel: " + AndroidGradleOptions.getTargetFeatureLevel(project))
+
+                String pluginVersion = getAndroidGradlePluginVersion()
+                int featureLevel = AndroidGradleOptions.getTargetFeatureLevel(project)
+                int minSdk = getMinSdk(variantScope)
+
+                println("DexKnife: AndroidPluginVersion: " + pluginVersion)
+                println("DexKnife: Target Device Api: " + featureLevel +
+                        "          MinSdkVersion: " + minSdk)
 
                 if (adtMainDexList == null) {
-                    if (minifyEnabled) {
-                        System.err.println("DexKnife: MainDexList in No-LegacyMultiDexMode isn't necessary. suggest-keep and suggest-split will merge into global filter.")
-                    } else {
-                        System.err.println("DexKnife: No-LegacyMultiDexMode and Not minifyEnabled, DexKnife is auto disabled!")
+                    if (isLegacyMultiDexMode(variantScope)) {
+                        println("DexKnife: LegacyMultiDexMode")
                         logProjectSetting(project, variant)
-                        return
+                    } else {
+                        System.err.println("DexKnife: WARNING: No-LegacyMultiDexMode (ART Runtime), MainDexList isn't necessary!")
+
+                        int gradlePluginVersion = getAndroidPluginVersion(pluginVersion)
+                        if (gradlePluginVersion >= 230) {
+                            System.err.println("DexKnife: Android Gradle Plugin >= 2.3.0," +
+                                    " MinSdkVersion is associated with Target Device Api (${featureLevel})." +
+                                    " Apk in ART Runtime, DexKnife is auto disabled!")
+                        } else {
+                            int artLevel = AndroidVersion.ART_RUNTIME.getFeatureLevel()
+                            if (minSdk >= artLevel) {
+                                System.err.println("DexKnife:" +
+                                        " MinSdkVersion (${minSdk}) >= ART Runtime (${artLevel})." +
+                                        " Apk in ART Runtime, DexKnife is auto disabled!")
+
+                                println("DexKnife: If you want to use DexKnife, set MinSdkVersion < ${artLevel}.")
+                            } else {
+                                logProjectSetting(project, variant)
+                            }
+                        }
+
+                        if (!minifyEnabled) {
+                            System.err.println("DexKnife: No-LegacyMultiDexMode and Not minifyEnabled, DexKnife is auto disabled!")
+                        }
                     }
+
+
+                    return
                 }
 
 
@@ -153,9 +181,8 @@ public class SplitToolsFor150 extends DexSplitTools {
         }
     }
 
-    private static boolean isInInstantRunMode(ApplicationVariant variant) {
+    private static boolean isInInstantRunMode(VariantScope scope) {
         try {
-            def scope = variant.getVariantData().getScope()
             def instantRunBuildContext = scope.getInstantRunBuildContext()
             return instantRunBuildContext.isInInstantRunMode()
         } catch (Throwable e) {
@@ -167,9 +194,13 @@ public class SplitToolsFor150 extends DexSplitTools {
         return (variant.getVariantData().getType().isForTesting());
     }
 
-    private static int getMinSdk(ApplicationVariant variant) {
-        VariantScope variantScope = variant.getVariantData().getScope()
+    private static int getMinSdk(VariantScope variantScope) {
         return variantScope.getMinSdkVersion().getApiLevel();
+    }
+
+    private static boolean isLegacyMultiDexMode(VariantScope variantScope) {
+        def configuration = variantScope.getVariantData().getVariantConfiguration()
+        return configuration.isLegacyMultiDexMode()
     }
 
     private static void logProjectSetting(Project project, ApplicationVariant variant) {
@@ -179,12 +210,11 @@ public class SplitToolsFor150 extends DexSplitTools {
         println("FeatureLevel: " + AndroidGradleOptions.getTargetFeatureLevel(project))
 
         def variantScope = variant.getVariantData().getScope()
-        def configuration = variantScope.getVariantData().getVariantConfiguration()
         GradleVariantConfiguration config = variantScope.getVariantConfiguration();
         def optionalCompilationSteps = AndroidGradleOptions.getOptionalCompilationSteps(project);
         def context = variantScope.getInstantRunBuildContext()
 
-        println("isLegacyMultiDexMode: " + configuration.isLegacyMultiDexMode())
+        println("isLegacyMultiDexMode: " + isLegacyMultiDexMode(variantScope))
         println("isInstantRunSupported: " + config.isInstantRunSupported())
         println("targetDeviceSupportsInstantRun: " + targetDeviceSupportsInstantRun(config, project))
         println("INSTANT_DEV: " + optionalCompilationSteps.contains(OptionalCompilationStep.INSTANT_DEV))
