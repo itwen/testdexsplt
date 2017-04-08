@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.core.GradleVariantConfiguration
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.transforms.DexTransform
-import com.android.builder.model.OptionalCompilationStep
 import com.android.sdklib.AndroidVersion
 import org.gradle.api.Project
 
@@ -97,11 +96,11 @@ public class SplitToolsFor150 extends DexSplitTools {
                 int featureLevel = AndroidGradleOptions.getTargetFeatureLevel(project)
                 int minSdk = getMinSdk(variantScope)
                 int targetSdk = getTargetSdk(variantScope)
-                boolean isNewBuild = gradlePluginVersion >= 230 && featureLevel >= 23
+                boolean isNewBuild = gradlePluginVersion >= 230 && featureLevel >= 23 && variant.buildType.debuggable
 
                 println("DexKnife: AndroidPluginVersion: " + pluginVersion)
                 println("          Target Device Api: " + featureLevel)
-                if (isNewBuild && variant.buildType.debuggable) {
+                if (isNewBuild) {
                     println("          MinSdkVersion: ${minSdk} (associated with Target Device Api and TargetSdkVersion)")
                 } else {
                     println("          MinSdkVersion: ${minSdk}")
@@ -232,11 +231,8 @@ public class SplitToolsFor150 extends DexSplitTools {
         println("TargetSdkVersion: " + getTargetSdk(variantScope))
         println("isLegacyMultiDexMode: " + isLegacyMultiDexMode(variantScope))
 
-        def optionalCompilationSteps = AndroidGradleOptions.getOptionalCompilationSteps(project);
-
         println("isInstantRunSupported: " + config.isInstantRunSupported())
         println("targetDeviceSupportsInstantRun: " + targetDeviceSupportsInstantRun(config, project))
-        println("INSTANT_DEV: " + optionalCompilationSteps.contains(OptionalCompilationStep.INSTANT_DEV))
         println("getPatchingPolicy: " + variantScope.getInstantRunBuildContext().getPatchingPolicy())
         System.err.println("Feedback Log End <<<<<<<<<<<<<<<<<<<<<<<<<<")
     }
