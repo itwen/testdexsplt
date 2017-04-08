@@ -93,49 +93,58 @@ public class SplitToolsFor150 extends DexSplitTools {
                 println("DexKnife: Adt Main: " + adtMainDexList)
 
                 String pluginVersion = getAndroidGradlePluginVersion()
+                int gradlePluginVersion = getAndroidPluginVersion(pluginVersion)
                 int featureLevel = AndroidGradleOptions.getTargetFeatureLevel(project)
                 int minSdk = getMinSdk(variantScope)
+                int targetSdk = getTargetSdk(variantScope)
+                boolean isNewBuild = gradlePluginVersion >= 230 && featureLevel >= 23
 
                 println("DexKnife: AndroidPluginVersion: " + pluginVersion)
-                println("DexKnife: Target Device Api: " + featureLevel +
-                        "          MinSdkVersion: " + minSdk)
+                println("          Target Device Api: " + featureLevel)
+                if (isNewBuild && variant.buildType.debuggable) {
+                    println("          MinSdkVersion: ${minSdk} (associated with Target Device Api and TargetSdkVersion)")
+                } else {
+                    println("          MinSdkVersion: ${minSdk}")
+                }
 
                 if (adtMainDexList == null) {
+                    // Android Gradle Plugin >= 2.3.0，DeviceSDK >= 23时，MinSdkVersion与targetSdk、DeviceSDK有关。
+                    // MinSdkVersion >= 21 时，Apk使用ART模式，系统支持mutlidex，并且不需要区分maindexlist，
+                    // ART模式下，开启minifyEnabled时，会压缩dex的分包数量，否则使用pre-dex分包模式。
+                    // MinSdkVersion < 21 时，Apk使用 LegacyMultiDexMode，maindexlist必然存在
+
                     if (isLegacyMultiDexMode(variantScope)) {
                         println("DexKnife: LegacyMultiDexMode")
-                        logProjectSetting(project, variant)
+                        logProjectSetting(project, variant, pluginVersion)
                     } else {
-                        System.err.println("DexKnife: WARNING: No-LegacyMultiDexMode (ART Runtime), MainDexList isn't necessary!")
+                        int artLevel = AndroidVersion.ART_RUNTIME.getFeatureLevel()
+                        if (minSdk >= artLevel) {
+                            System.err.println("DexKnife: MinSdkVersion (${minSdk}) >= ${artLevel} (System support ART Runtime).")
+                            System.err.println("          Build with ART Runtime, MainDexList isn't necessary. DexKnife is auto disabled!")
 
-                        int gradlePluginVersion = getAndroidPluginVersion(pluginVersion)
-                        if (gradlePluginVersion >= 230) {
-                            System.err.println("DexKnife: Android Gradle Plugin >= 2.3.0," +
-                                    " MinSdkVersion is associated with Target Device Api (${featureLevel})." +
-                                    " Apk in ART Runtime, DexKnife is auto disabled!")
-                        } else {
-                            int artLevel = AndroidVersion.ART_RUNTIME.getFeatureLevel()
-                            if (minSdk >= artLevel) {
-                                System.err.println("DexKnife:" +
-                                        " MinSdkVersion (${minSdk}) >= ART Runtime (${artLevel})." +
-                                        " Apk in ART Runtime, DexKnife is auto disabled!")
-
-                                println("DexKnife: If you want to use DexKnife, set MinSdkVersion < ${artLevel}.")
+                            if (isNewBuild) {
+                                System.err.println("")
+                                System.err.println("          Note: In Android Gradle plugin >= 2.3.0 debug mode, MinSdkVersion is associated with min of \"Target Device (API ${featureLevel})\" and TargetSdkVersion (${targetSdk}).")
+                                System.err.println("          If you want to enable DexKnife, use Android Gradle plugin < 2.3.0, or running device api < 23 or set TargetSdkVersion < 23.")
                             } else {
-                                logProjectSetting(project, variant)
+                                System.err.println("")
+                                System.err.println("          If you want to use DexKnife, set MinSdkVersion < ${artLevel}.")
                             }
-                        }
 
-                        if (!minifyEnabled) {
-                            System.err.println("DexKnife: No-LegacyMultiDexMode and Not minifyEnabled, DexKnife is auto disabled!")
+                            if (variant.buildType.debuggable) {
+                                System.err.println("          Now is Debug mode. Make sure your MinSdkVersion < ${artLevel}, DexKnife will auto enable in release mode if conditions are compatible.")
+                            }
+
+                        } else {
+                            logProjectSetting(project, variant, pluginVersion)
                         }
                     }
-
 
                     return
                 }
 
 
-                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project, adtMainDexList)
+                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project)
 
                 // 非混淆的，从合并后的jar文件中提起mainlist；
                 // 混淆的，直接从mapping文件中提取
@@ -195,7 +204,13 @@ public class SplitToolsFor150 extends DexSplitTools {
     }
 
     private static int getMinSdk(VariantScope variantScope) {
-        return variantScope.getMinSdkVersion().getApiLevel();
+        def version = variantScope.getMinSdkVersion()
+        return version != null? version.getApiLevel(): 0;
+    }
+
+    private static int getTargetSdk(VariantScope variantScope) {
+        def version = variantScope.getVariantConfiguration().getTargetSdkVersion()
+        return version != null? version.getApiLevel(): 0;
     }
 
     private static boolean isLegacyMultiDexMode(VariantScope variantScope) {
@@ -203,23 +218,27 @@ public class SplitToolsFor150 extends DexSplitTools {
         return configuration.isLegacyMultiDexMode()
     }
 
-    private static void logProjectSetting(Project project, ApplicationVariant variant) {
+    private static void logProjectSetting(Project project, ApplicationVariant variant, String pluginVersion) {
         System.err.println("Please feedback below Log to  https://github.com/ceabie/DexKnifePlugin/issues")
         System.err.println("Feedback Log Start >>>>>>>>>>>>>>>>>>>>>>>")
-        println("variant: " + variant.name.capitalize())
-        println("FeatureLevel: " + AndroidGradleOptions.getTargetFeatureLevel(project))
-
         def variantScope = variant.getVariantData().getScope()
         GradleVariantConfiguration config = variantScope.getVariantConfiguration();
-        def optionalCompilationSteps = AndroidGradleOptions.getOptionalCompilationSteps(project);
-        def context = variantScope.getInstantRunBuildContext()
 
+        println("AndroidPluginVersion: " + pluginVersion)
+        println("variant: " + variant.name.capitalize())
+        println("minifyEnabled: " + variant.buildType.minifyEnabled)
+        println("FeatureLevel:  " + AndroidGradleOptions.getTargetFeatureLevel(project))
+        println("MinSdkVersion: " + getMinSdk(variantScope))
+        println("TargetSdkVersion: " + getTargetSdk(variantScope))
         println("isLegacyMultiDexMode: " + isLegacyMultiDexMode(variantScope))
+
+        def optionalCompilationSteps = AndroidGradleOptions.getOptionalCompilationSteps(project);
+
         println("isInstantRunSupported: " + config.isInstantRunSupported())
         println("targetDeviceSupportsInstantRun: " + targetDeviceSupportsInstantRun(config, project))
         println("INSTANT_DEV: " + optionalCompilationSteps.contains(OptionalCompilationStep.INSTANT_DEV))
-        println("getPatchingPolicy: " + context.getPatchingPolicy())
-        System.err.println("Feedback Log End <<<<<<<<<<<<<<<<<<<<<<<")
+        println("getPatchingPolicy: " + variantScope.getInstantRunBuildContext().getPatchingPolicy())
+        System.err.println("Feedback Log End <<<<<<<<<<<<<<<<<<<<<<<<<<")
     }
 
     private static boolean targetDeviceSupportsInstantRun(

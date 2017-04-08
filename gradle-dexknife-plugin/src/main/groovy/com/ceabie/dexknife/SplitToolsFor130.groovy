@@ -52,7 +52,7 @@ public class SplitToolsFor130 extends DexSplitTools {
                 File andMainDexList = scope.mainDexListFile
                 boolean minifyEnabled = variant.buildType.minifyEnabled
 
-                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project, andMainDexList)
+                DexKnifeConfig dexKnifeConfig = getDexKnifeConfig(project)
 
                 if (processMainDexList(project, minifyEnabled, mappingFile, mergedJar,
                         andMainDexList, dexKnifeConfig)) {

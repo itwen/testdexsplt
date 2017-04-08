@@ -104,7 +104,7 @@ public class DexSplitTools {
     /**
      * get the config of dex knife
      */
-    protected static DexKnifeConfig getDexKnifeConfig(Project project, File adtMaindexList)
+    protected static DexKnifeConfig getDexKnifeConfig(Project project)
             throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(project.file(DEX_KNIFE_CFG_TXT)));
         DexKnifeConfig dexKnifeConfig = new DexKnifeConfig();
@@ -196,21 +196,16 @@ public class DexSplitTools {
         // 使用ADT建议的mainlist
         if (dexKnifeConfig.useSuggest) {
 
-            if (adtMaindexList != null) {
-                // 将全局过滤应用到建议的mainlist
-                if (dexKnifeConfig.filterSuggest) {
-                    splitSuggest.addAll(splitToSecond);
-                    keepSuggest.addAll(keepMain);
-                }
+            // 将全局过滤应用到建议的mainlist
+            if (dexKnifeConfig.filterSuggest) {
+                splitSuggest.addAll(splitToSecond);
+                keepSuggest.addAll(keepMain);
+            }
 
-                if (!splitSuggest.isEmpty() || !keepSuggest.isEmpty()) {
-                    dexKnifeConfig.suggestPatternSet = new PatternSet()
-                            .exclude(splitSuggest)
-                            .include(keepSuggest);
-                }
-            } else {
-                splitToSecond.addAll(splitSuggest);
-                keepMain.addAll(keepSuggest);
+            if (!splitSuggest.isEmpty() || !keepSuggest.isEmpty()) {
+                dexKnifeConfig.suggestPatternSet = new PatternSet()
+                        .exclude(splitSuggest)
+                        .include(keepSuggest);
             }
         }
 
@@ -219,8 +214,10 @@ public class DexSplitTools {
                     .exclude(splitToSecond)
                     .include(keepMain);
         } else {
-            dexKnifeConfig.useSuggest = true;
-            System.err.println("DexKnife Warning: NO SET split Or keep path, it will use Recommend!");
+            if (!dexKnifeConfig.useSuggest) {
+                System.err.println("DexKnife Warning: NO SET split Or keep path, it will use Recommend!");
+                dexKnifeConfig.useSuggest = true;
+            }
         }
 
         dexKnifeConfig.additionalParameters = addParams;
