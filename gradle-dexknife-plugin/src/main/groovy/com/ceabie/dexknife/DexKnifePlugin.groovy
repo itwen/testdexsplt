@@ -27,27 +27,29 @@ public class DexKnifePlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-
         project.afterEvaluate {
-
             for (variant in project.android.applicationVariants) {
-                if (isMultiDexEnabled(variant)) {
-                    if (SplitToolsFor130.isCompat(variant)) {
-                        System.err.println("DexKnife: Compat 1.3.0.");
-                        SplitToolsFor130.processSplitDex(project, variant)
-                    } else if (SplitToolsFor150.isCompat()) {
-                        SplitToolsFor150.processSplitDex(project, variant)
-                    } else {
-                        System.err.println("DexKnife Error: DexKnife is not compatible your Android gradle plugin.");
-                    }
-                } else {
-                    System.err.println("DexKnife : MultiDexEnabled is false, it's not work.");
-                }
+                dexKnifeProcessVariant(project, variant)
             }
         }
     }
 
-    private static boolean isMultiDexEnabled(variant) {
+    public static void dexKnifeProcessVariant(Project project, variant) {
+        if (isMultiDexEnabled(variant)) {
+            if (SplitToolsFor130.isCompat(variant)) {
+                System.err.println("DexKnife: Compat 1.3.0.");
+                SplitToolsFor130.processSplitDex(project, variant)
+            } else if (SplitToolsFor150.isCompat()) {
+                SplitToolsFor150.processSplitDex(project, variant)
+            } else {
+                System.err.println("DexKnife Error: DexKnife is not compatible your Android gradle plugin.");
+            }
+        } else {
+            System.err.println("DexKnife : MultiDexEnabled is false, it's not work.");
+        }
+    }
+
+    public static boolean isMultiDexEnabled(variant) {
         def is = variant.buildType.multiDexEnabled
         if (is != null) {
             return is;
