@@ -11,7 +11,7 @@
 - **Notes: Because instant-run of 2.0.0 above is incompatible with multidex, DexKnife is auto disabled when instant-run mode.
 It will auto enable when disabled instant-run or in packaging release.(minsdk < 21)**
 
-[中文](#DexKnife（中文）)
+<a href="#dexknife（中文）">中文</a>
 
 ## Update Log
 
