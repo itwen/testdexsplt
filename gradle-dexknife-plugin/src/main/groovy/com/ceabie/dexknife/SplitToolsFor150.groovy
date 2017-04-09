@@ -119,7 +119,7 @@ public class SplitToolsFor150 extends DexSplitTools {
                         int artLevel = AndroidVersion.ART_RUNTIME.getFeatureLevel()
                         if (minSdk >= artLevel) {
                             System.err.println("DexKnife: MinSdkVersion (${minSdk}) >= ${artLevel} (System support ART Runtime).")
-                            System.err.println("          Build with ART Runtime, MainDexList isn't necessary. DexKnife is auto disabled!")
+                            System.err.println("          Build with ART Runtime, MainDexList isn't necessary. DexKnife is auto disable!")
 
                             if (isNewBuild) {
                                 System.err.println("")
