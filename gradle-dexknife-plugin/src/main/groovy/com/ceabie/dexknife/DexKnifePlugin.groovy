@@ -35,6 +35,8 @@ public class DexKnifePlugin implements Plugin<Project> {
     }
 
     public static void dexKnifeProcessVariant(Project project, variant) {
+        println("DexKnife: Processing Variant");
+
         if (isMultiDexEnabled(variant)) {
             if (SplitToolsFor130.isCompat(variant)) {
                 System.err.println("DexKnife: Compat 1.3.0.");

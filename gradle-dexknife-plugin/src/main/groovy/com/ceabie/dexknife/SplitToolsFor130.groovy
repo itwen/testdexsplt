@@ -41,6 +41,8 @@ public class SplitToolsFor130 extends DexSplitTools {
     public static void processSplitDex(Project project, Object variant) {
         def dex = variant.dex
         if (dex.multiDexEnabled) {
+            println("DexKnife: processing Task")
+
             dex.inputs.file DEX_KNIFE_CFG_TXT
 
             dex.doFirst {
@@ -66,6 +68,8 @@ public class SplitToolsFor130 extends DexSplitTools {
 
                 endDexKnife()
             }
+        } else {
+            System.err.println("DexKnife: process task error")
         }
     }
 }

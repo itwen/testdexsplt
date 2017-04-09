@@ -79,6 +79,8 @@ public class SplitToolsFor150 extends DexSplitTools {
         }
 
         if (dexTask != null && ((DexTransform) dexTask.transform).multiDex) {
+            println("DexKnife: processing Task")
+
             dexTask.inputs.file DEX_KNIFE_CFG_TXT
 
             dexTask.doFirst {
@@ -186,6 +188,8 @@ public class SplitToolsFor150 extends DexSplitTools {
 
                 endDexKnife()
             }
+        } else {
+            System.err.println("DexKnife: process task error")
         }
     }
 
