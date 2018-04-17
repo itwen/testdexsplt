@@ -1,0 +1,19 @@
+{
+  "additionalParameters":[],
+  "mDexEntrySet":[
+    {
+      "name":"dexsplit",
+      "packages":[
+        "com.lingyi",
+        "com.kaola"
+      ]
+    },
+    {
+      "name":"testthird",
+      "packages":[
+        "com.test"
+      ]
+    }
+  ],
+  "mMaindexFiles":[]
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/DexKnifePlugin.iml" filepath="$PROJECT_DIR$/DexKnifePlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gradle-dexknife-plugin/gradle-dexknife-plugin.iml" filepath="$PROJECT_DIR$/gradle-dexknife-plugin/gradle-dexknife-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/secondlib/secondlib.iml" filepath="$PROJECT_DIR$/secondlib/secondlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/testdexsplit/testdexsplit.iml" filepath="$PROJECT_DIR$/testdexsplit/testdexsplit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/thirdlib/thirdlib.iml" filepath="$PROJECT_DIR$/thirdlib/thirdlib.iml" />
+    </modules>
+  </component>
+</project>

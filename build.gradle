@@ -1,13 +1,18 @@
 buildscript {
     repositories {
-        maven { url uri('./repo') }
         jcenter()
         mavenCentral()
+        maven {
+            url 'http://localhost:8081/repository/maven-public/'
+        }
+        google()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
-        classpath 'com.ceabie.dextools:gradle-dexknife-plugin:1.6.0'
+        classpath 'com.android.tools.build:gradle:3.0.1'
+        //classpath 'com.ceabie.dextools:gradle-dexknife-plugin:1.7.13-SNAPSHOT'
+        classpath 'com.kaola.dexsplit:dexsplit-plugin:0.0.181-SNAPSHOT'
+        //classpath 'com.github.typ0520:fastdex-gradle:0.8.8.9
     }
 }
 
@@ -15,5 +20,9 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
+        maven {
+            url 'http://localhost:8081/repository/maven-public/'
+        }
+        google()
     }
 }

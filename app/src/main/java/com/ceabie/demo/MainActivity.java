@@ -1,9 +1,14 @@
 package com.ceabie.demo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
+
+import com.kaola.secondlib.SecondAcitivty;
+import com.kaola.testdexsplit.TestSplitActivity;
+import com.test.thirdlib.ThirdLibActivity;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -21,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mViewById = (TextView) findViewById(R.id.text);
-
         findViewById(R.id.btn_save_photo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,6 +51,30 @@ public class MainActivity extends AppCompatActivity {
                                 log(String.valueOf(integer));
                             }
                         });
+            }
+        });
+
+        findViewById(R.id.jumpto_lib1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, SecondAcitivty.class);
+                MainActivity.this.startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.jumpto_split).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, TestSplitActivity.class);
+                MainActivity.this.startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.jumpto_third).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ThirdLibActivity.class);
+                MainActivity.this.startActivity(intent);
             }
         });
     }

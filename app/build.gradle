@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
-if (hasDexKnifePlugin()) {
-    apply plugin: 'com.ceabie.dexnkife'
-}
+//apply plugin: 'com.ceabie.dexnkife'
+apply plugin: 'com.kaola.dexsplit'
+//apply plugin: 'fastdex.app'
 
 android {
     compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VER)
@@ -14,17 +14,23 @@ android {
         versionName "1.0"
 
         multiDexEnabled true
+      //  multiDexKeepProguard file('multidex_keep.pro')
+    }
+
+    lintOptions {
+        abortOnError false
+        disable "ResourceType"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+          //  minifyEnabled false
+           // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         debug {
 //            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -43,6 +49,16 @@ android {
         exclude ".readme"
     }
 }
+kaolaDexSplit{
+    config "release_config.json"
+    splitEnable true
+}
+
+/*fastdex {
+    onlyHookDebug = true
+    useCustomCompile = true
+    fastdexEnable =  true
+}*/
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -52,15 +68,7 @@ dependencies {
     //    compile 'com.google.dagger:dagger:2.0'
     //    apt 'com.google.dagger:dagger-compiler:2.0'
     compile 'com.android.support:multidex:1.0.1'
-    compile project(':lib1')
-}
-
-static boolean hasDexKnifePlugin() {
-    try {
-        Class.forName("com.ceabie.dexknife.DexKnifePlugin")
-        return true
-    } catch (Exception e) {
-    }
-
-    return false
+    compile project(':testdexsplit')
+    compile project(':secondlib')
+    compile project(':thirdlib')
 }

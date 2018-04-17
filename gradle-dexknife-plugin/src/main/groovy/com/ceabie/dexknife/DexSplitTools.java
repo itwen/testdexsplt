@@ -90,7 +90,7 @@ public class DexSplitTools {
             System.out.println("DexKnife Error: jarMerging is Null! Skip DexKnife. Please report All Gradle Log.");
             return false;
         }
-
+        System.out.println("--------------------processMainDexList---------------------------------");
         try {
             return genMainDexList(project, minifyEnabled, mappingFile, jarMergingOutputFile,
                     andMainDexList, dexKnifeConfig);
@@ -292,7 +292,7 @@ public class DexSplitTools {
                                           File mappingFile, File jarMergingOutputFile,
                                           File adtMainDexList, DexKnifeConfig dexKnifeConfig) throws Exception {
 
-        System.out.println(":" + project.getName() + ":genMainDexList");
+        System.out.println("-----------:" + project.getName() + ":genMainDexList adtMainDexList.exists():"+adtMainDexList.exists());
 
         // 1.get the recommend adt's maindexlist
         Map<String, Boolean> recommendMainClasses = null;
@@ -423,7 +423,6 @@ public class DexSplitTools {
 
         ClassFileTreeElement filterElement = new ClassFileTreeElement();
         Spec<FileTreeElement> asSpec = getMaindexSpec(mainDexPattern);
-
         while ((line = reader.readLine()) != null) {
             line = line.trim();
 
@@ -512,19 +511,18 @@ public class DexSplitTools {
         String line, clsPath;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
+            System.out.println("-----[lingyilog]-----maindexClass:"+line);
             int clsPos = line.lastIndexOf(CLASS_SUFFIX);
             if (clsPos != -1) {
                 boolean satisfiedBy = true;
-
                 if (asSpec != null) {
                     clsPath = line.substring(0, clsPos).replace('.', '/') + CLASS_SUFFIX;
                     treeElement.setClassPath(clsPath);
 
                     satisfiedBy = asSpec.isSatisfiedBy(treeElement);
-                    if (logFilter) {
-                        System.out.println("DexKnife-Suggest: [" +
-                                (satisfiedBy ? "Keep" : "Split") + "]  " + clsPath);
-                    }
+                   /* if (logFilter) {
+                        System.out.println("DexKnife-Suggest: [" + (satisfiedBy ? "Keep" : "Split") + "]  " + clsPath);
+                    }*/
                 }
 
                 mainCls.put(line, satisfiedBy);

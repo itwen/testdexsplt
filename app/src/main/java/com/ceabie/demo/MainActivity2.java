@@ -18,7 +18,7 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.split_activity_main);
         mViewById = (TextView) findViewById(R.id.text);
 
         findViewById(R.id.btn_save_photo).setOnClickListener(new View.OnClickListener() {

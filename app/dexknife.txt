@@ -1,18 +1,18 @@
 
 # Global filter, don't apply with suggest maindexlist if -filter-suggest is DISABLE.
 # this path will to be split to second dex.
-android.support.v?.**
+#android.support.v?.**
 
--split rx.**  # same as rx.**
+#-split rx.**  # same as rx.**
 
-**.MainActivity2.class
-**.MainActivity2$*.class   # use $* to filter the inner classes.
+#**.MainActivity2.class
+#**.MainActivity2$*.class   # use $* to filter the inner classes.
 
 # if you want to keep some classes in main dex, use '-keep'.
--keep android.support.v4.view.**
+#-keep android.support.v4.view.**
 
 # you can keep single class in main dex, use '-keep'.
--keep android.support.v7.app.AppCompatDialogFragment.class
+#-keep android.support.v7.app.AppCompatDialogFragment.class
 
 # do not use suggest of the maindexlist that android gradle plugin generate.
 #-donot-use-suggest
@@ -33,4 +33,5 @@ android.support.v?.**
 # It will merge global filter if -filter-suggest is ENABLE.
 #-suggest-split **.MainActivity2.class
 #-suggest-split **.MainActivity2$*.class
+-suggest-split com.ceabie.demo.methodpool1.**
 #-suggest-keep android.support.multidex.**

@@ -46,8 +46,8 @@ compileGroovy {
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    provided 'com.android.tools.build:builder:1.5.0'
-    provided 'com.android.tools.build:gradle-core:1.5.0'
+    provided 'com.android.tools.build:builder:3.0.1'
+    provided 'com.android.tools.build:gradle-core:3.0.1'
 }
 
 version = "${PUBLIC_VERSION}"
@@ -85,27 +85,6 @@ publishing {
     }
 }
 
-bintray {
-    user = bintrayUser
-    key = bintrayApiKey
-
-    publications = ['mavenJava']
-    pkg {
-        repo = 'gradle-plugins'
-        name = 'gradle-dexknife-plugin'
-        labels = ['gradle', 'plugin', 'dex', 'split sex', 'multidex']
-        websiteUrl = POM_URL
-        vcsUrl = POM_URL + '.git'
-        issueTrackerUrl = POM_URL + '/issues'
-        licenses = ["Apache-2.0"]
-        version {
-            name = "${PUBLIC_VERSION}"
-            attributes = ['gradle-plugin': 'com.ceabie.dextools:gradle-dexknife-plugin']
-        }
-    }
-    publish = true
-}
-
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
     classifier = 'sources'
@@ -122,10 +101,17 @@ task wrapper(type: Wrapper, description: 'Gradle Wrapper task') {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository(url: uri('../repo'))
-            pom.version = "${DEV_VERSION}"
-            pom.artifactId = "gradle-dexknife-plugin"
-            pom.groupId = "com.ceabie.dextools"
+            repository(url: 'http://localhost:8081/repository/maven-releases/') {
+                authentication(userName: 'admin', password: 'admin123')
+            }
+            snapshotRepository(url: 'http://localhost:8081/repository/maven-snapshots/') {
+                authentication(userName: 'admin', password: 'admin123')
+            }
+            pom.project{
+                groupId "com.ceabie.dextools"
+                artifactId "gradle-dexknife-plugin"
+                version '1.7.13-SNAPSHOT'
+            }
         }
     }
 }
